@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Succes Calculator</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        .container { max-width: 400px; margin: auto; }
+        label, select, input { display: block; margin: 10px 0; width: 100%; }
+        button { padding: 10px; width: 100%; background-color: #28a745; color: white; border: none; }
+        .result { margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Bereken je Succes Score</h2>
+
+        <label>Dag van ex:</label>
+        <select id="dag">
+            <option value="chill">chill</option>
+            <option value="niet chill">niet chill</option>
+        </select>
+
+        <label>Uur van ex:</label>
+        <select id="uur">
+            <option value="chill">chill</option>
+            <option value="niet chill">niet chill</option>
+        </select>
+
+        <label>Nieuwe serie:</label>
+        <select id="serie">
+            <option value="ja">ja</option>
+            <option value="nee">nee</option>
+        </select>
+
+        <label>Uren gestudeerd: <span id="urenLabel">0</span></label>
+        <input type="range" id="uren" min="0" max="24" value="0">
+
+        <button onclick="berekenScore()">✓ Bereken Score</button>
+
+        <div class="result" id="resultaat"></div>
+    </div>
+
+    <script>
+        const urenSlider = document.getElementById('uren');
+        const urenLabel = document.getElementById('urenLabel');
+        urenSlider.addEventListener('input', () => {
+            urenLabel.textContent = urenSlider.value;
+        });
+
+        function berekenScore() {
+            const dag = document.getElementById('dag').value;
+            const uur = document.getElementById('uur').value;
+            const serie = document.getElementById('serie').value;
+            const uren = document.getElementById('uren').value;
+
+            fetch('/calculate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dag, uur, serie, uren })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('resultaat').innerHTML =
+                    `Score: ${data.score}%<br>${data.message}`;
+            });
+        }
+    </script>
+</body>
+</html>

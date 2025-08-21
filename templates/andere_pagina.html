@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Berichten van anderen</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        .container { max-width: 600px; margin: auto; }
+        textarea, input { width: 100%; margin: 10px 0; padding: 10px; font-size: 16px; }
+        button { padding: 10px; background-color: #28a745; color: white; border: none; }
+        .message-box { margin-top: 30px; }
+        .message { background: #f9f9f9; padding: 10px; margin: 5px 0; border-left: 4px solid #28a745; display: flex; justify-content: space-between; align-items: center; }
+        .delete-form { display: flex; align-items: center; gap: 6px; }
+        .delete-input { width: 100px; padding: 6px; }
+        .delete-btn { background-color: red; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Laat je bericht achter</h2>
+        <form method="POST">
+            <label>Naam:</label>
+            <input type="text" name="name" required placeholder="Bijv. Xander" />
+
+            <label>Bericht:</label>
+            <textarea name="message" rows="3" required placeholder="Typ hier je boodschap..."></textarea>
+
+            <button type="submit">Verstuur</button>
+        </form>
+
+        <div class="message-box">
+            <h3>Inzendingen:</h3>
+            {% for msg in messages %}
+                <div class="message">
+                    <span>{{ msg }}</span>
+                    <form method="POST" class="delete-form">
+                        <input type="hidden" name="delete" value="{{ loop.index0 }}">
+                        <input class="delete-input" type="password" name="admin_password" placeholder="Admin wachtwoord" required />
+                        <button type="submit" class="delete-btn">Verwijder</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+<a href="{{ url_for('index') }}">← Terug naar de hoofdpagina</a>
+</body>
+</html>
+
+
+

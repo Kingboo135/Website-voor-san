@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Succes Calculator</title>
+  <style>
+    body {
+      font-family: Arial;
+      margin: 40px;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+      margin: auto;
+    }
+
+    label,
+    select,
+    input {
+      display: block;
+      margin: 10px 0;
+      width: 100%;
+    }
+
+    button {
+      padding: 10px;
+      width: 100%;
+      background-color: #28a745;
+      color: white;
+      border: none;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    #customAlert {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .alert-content {
+      background: white;
+      padding: 30px;
+      font-size: 18px;
+      border-radius: 10px;
+      max-width: 90%;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .alert-content button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .digital-rain {
+      position: fixed;
+      top: 0;
+      width: 40vw;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 999;
+      font-family: monospace;
+      font-size: 18px;
+      color: #00ff00;
+      background-color: rgba(0, 0, 0, 0.85);
+    }
+
+    .digital-rain.left {
+      left: 0;
+    }
+
+    .digital-rain.right {
+      right: 0;
+    }
+
+    .digit {
+      position: absolute;
+      white-space: nowrap;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(100vh);
+        opacity: 0;
+      }
+    }
+
+    .top-right-link {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 1001;
+      background-color: #28a745;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      transition: background-color 0.2s ease;
+    }
+
+    .top-right-link:hover {
+      background-color: #218838;
+    }
+
+    #commentsModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1500;
+    }
+
+    #commentsModalContent {
+      background: white;
+      width: 90%;
+      max-width: 600px;
+      max-height: 70vh;
+      border-radius: 10px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #commentsList {
+      overflow-y: auto;
+      flex-grow: 1;
+      margin-top: 10px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    #closeCommentsModal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 20px;
+      font-weight: bold;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: #555;
+    }
+
+    #closeCommentsModal:hover {
+      color: #000;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 600px) {
+      body {
+        margin: 20px;
+      }
+
+      .alert-content {
+        font-size: 16px;
+        padding: 20px;
+      }
+
+      .top-right-link {
+        padding: 6px 10px;
+        font-size: 14px;
+      }
+
+      button {
+        font-size: 16px;
+        padding: 10px;
+      }
+
+      .digital-rain {
+        width: 25vw;
+      }
+    }
+  </style>
+
+  <script>
+    const printImageUrl = "{{ diploma_url }}";
+    const secretImageUrl = "{{ secret_url }}";
+  </script>
+</head>
+<body>
+  <a href="https://chess.com" target="_blank" class="top-right-link">Ik ben het helemaal beu</a>
+
+  <div class="digital-rain left"></div>
+  <div class="digital-rain right"></div>
+
+  <div class="container">
+    <h2>Bereken je Score</h2>
+
+    <label>Dag van examen:</label>
+    <select id="dag">
+      <option value="chill">chill</option>
+      <option value="niet chill">niet chill</option>
+    </select>
+
+    <label>Uur van examen:</label>
+    <select id="uur">
+      <option value="chill">chill</option>
+      <option value="niet chill">niet chill</option>
+    </select>
+
+    <label>Nieuwe serie uitgekomen?:</label>
+    <select id="serie">
+      <option value="nee">nee</option>
+      <option value="ja">ja</option>
+    </select>
+
+    <label>Uren gestudeerd: <span id="urenLabel">0</span></label>
+    <input type="range" id="uren" min="0" max="50" value="0" />
+
+    <button onclick="berekenScore()">✓ Bereken Score</button>
+
+    <div class="result" id="resultaat"></div>
+  </div>
+
+  <div id="customAlert" style="display:none;">
+    <div class="alert-content">
+      <p id="alertText"></p>
+      <div style="display: flex; justify-content: center; gap: 20px;">
+        <button style="background-color: #28a745;" onclick="closeAlert()">Ik ben Andreas</button>
+        <button style="background-color: #007bff;" onclick="window.location.href='/andere-pagina'">Ik ben niet andreas</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="commentsModal">
+    <div id="commentsModalContent">
+      <button id="closeCommentsModal" aria-label="Close comments">&times;</button>
+      <h3>Alle Reacties</h3>
+      <div id="commentsList"></div>
+    </div>
+  </div>
+
+  <script>
+    window.onload = function () {
+      const message = `Deze code is bedoeld voor Andreas Vanhoutte (1 woord: ou, dubbele t).\n\nDeze is ook bedoeld voor wanneer deze jongeman geslaagd zou zijn.`;
+      document.getElementById('alertText').innerText = message;
+      document.getElementById('customAlert').style.display = 'flex';
+    };
+
+    function closeAlert() {
+      document.getElementById('customAlert').style.display = 'none';
+    }
+
+    const urenSlider = document.getElementById('uren');
+    const urenLabel = document.getElementById('urenLabel');
+    urenSlider.addEventListener('input', () => {
+      urenLabel.textContent = urenSlider.value;
+    });
+
+    function berekenScore() {
+      const dag = document.getElementById('dag').value;
+      const uur = document.getElementById('uur').value;
+      const serie = document.getElementById('serie').value;
+      const uren = document.getElementById('uren').value;
+
+      fetch('/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dag, uur, serie, uren })
+      })
+        .then(response => response.json())
+        .then(data => {
+          const messageText = `Score: ${data.Score}%\n${data.message}`;
+          typeMessage(messageText, "resultaat", () => {
+            if (data.image_url) {
+              const img = document.createElement('img');
+              img.src = data.image_url;
+              img.alt = "Success image";
+              img.style.marginTop = '15px';
+              img.style.maxWidth = '100%';
+              document.getElementById('resultaat').appendChild(img);
+            }
+
+            if (data.Score >= 50) {
+              const showCommentsBtn = document.createElement('button');
+              showCommentsBtn.textContent = 'Enkele proficiatwensen';
+              showCommentsBtn.style.marginTop = '15px';
+              showCommentsBtn.style.padding = '10px 20px';
+              showCommentsBtn.style.backgroundColor = '#007bff';
+              showCommentsBtn.style.color = 'white';
+              showCommentsBtn.style.border = 'none';
+              showCommentsBtn.style.borderRadius = '6px';
+              showCommentsBtn.style.cursor = 'pointer';
+
+              showCommentsBtn.onclick = function () {
+                const modal = document.getElementById('commentsModal');
+                const commentsList = document.getElementById('commentsList');
+                commentsList.innerHTML = '';
+                const ul = document.createElement('ul');
+                data.all_messages.forEach(msg => {
+                  const li = document.createElement('li');
+                  li.textContent = msg;
+                  ul.appendChild(li);
+                });
+                commentsList.appendChild(ul);
+                modal.style.display = 'flex';
+              };
+
+              document.getElementById('closeCommentsModal').onclick = function () {
+                document.getElementById('commentsModal').style.display = 'none';
+              };
+
+              const resultaatDiv = document.getElementById('resultaat');
+
+              const printBtn = document.createElement('button');
+              printBtn.textContent = 'Print je Diploma';
+              printBtn.style.marginTop = '15px';
+              printBtn.style.padding = '10px 20px';
+              printBtn.style.backgroundColor = '#28a745';
+              printBtn.style.color = 'white';
+              printBtn.style.border = 'none';
+              printBtn.style.borderRadius = '6px';
+              printBtn.style.cursor = 'pointer';
+
+              printBtn.onclick = function () {
+                const printFrame = document.createElement('iframe');
+                printFrame.style.position = 'fixed';
+                printFrame.style.right = '0';
+                printFrame.style.bottom = '0';
+                printFrame.style.width = '0';
+                printFrame.style.height = '0';
+                printFrame.style.border = '0';
+                document.body.appendChild(printFrame);
+
+                const doc = printFrame.contentWindow.document;
+                doc.open();
+                doc.write(`
+                    <html>
+                      <head>
+                        <style>
+                          @page { size: landscape; margin: 0; }
+                          body {
+                            margin: 0;
+                            padding: 0;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            height: 100vh;
+                          }
+                          img {
+                            max-height: 100%;
+                            max-width: 100%;
+                          }
+                        </style>
+                      </head>
+                      <body>
+                        <img src="${printImageUrl}" alt="Print Succes" />
+                      </body>
+                    </html>
+                  `);
+                doc.close();
+
+                printFrame.onload = function () {
+                  printFrame.contentWindow.focus();
+                  printFrame.contentWindow.print();
+                  setTimeout(() => {
+                    document.body.removeChild(printFrame);
+                  }, 1000);
+                };
+              };
+
+              resultaatDiv.appendChild(showCommentsBtn);
+              resultaatDiv.appendChild(printBtn);
+            }
+          });
+        });
+    }
+
+    function typeMessage(text, elementId, callback) {
+      let i = 0;
+      const speed = 30;
+      const el = document.getElementById(elementId);
+      el.innerHTML = '';
+      function type() {
+        if (i < text.length) {
+          const char = text.charAt(i);
+          el.innerHTML += (char === '\n') ? '<br>' : char;
+          i++;
+          setTimeout(type, speed);
+        } else {
+          if (callback) callback();
+        }
+      }
+      type();
+    }
+
+    let secretCode = "secretcode";
+    let typedKeys = "";
+
+    document.addEventListener("keydown", function (e) {
+      typedKeys += e.key.toLowerCase();
+      if (typedKeys.length > secretCode.length) {
+        typedKeys = typedKeys.slice(-secretCode.length);
+      }
+      if (typedKeys === secretCode) {
+        activateEasterEgg();
+        typedKeys = "";
+      }
+    });
+
+    function activateEasterEgg() {
+      const egg = document.createElement("div");
+      egg.style.position = "fixed";
+      egg.style.top = 0;
+      egg.style.left = 0;
+      egg.style.width = "100%";
+      egg.style.height = "100%";
+      egg.style.backgroundColor = "black";
+      egg.style.zIndex = 2000;
+      egg.style.display = "flex";
+      egg.style.justifyContent = "center";
+      egg.style.alignItems = "center";
+
+      const img = document.createElement("img");
+      img.src = secretImageUrl;
+      img.alt = "Easter Egg";
+      img.style.maxWidth = "100%";
+      img.style.maxHeight = "100%";
+      img.style.objectFit = "contain";
+
+      egg.appendChild(img);
+      document.body.appendChild(egg);
+
+      setTimeout(() => {
+        document.body.removeChild(egg);
+      }, 5000);
+    }
+
+    function createDigit(container) {
+      const digit = document.createElement('div');
+      digit.classList.add('digit');
+      digit.textContent = Math.random() > 0.5 ? '1' : '0';
+      digit.style.left = `${Math.random() * 100}%`;
+      digit.style.animationDuration = `${2 + Math.random() * 3}s`;
+      digit.style.fontSize = `${12 + Math.random() * 10}px`;
+      container.appendChild(digit);
+
+      setTimeout(() => {
+        container.removeChild(digit);
+      }, 5000);
+    }
+
+    setInterval(() => {
+      const left = document.querySelector('.digital-rain.left');
+      const right = document.querySelector('.digital-rain.right');
+      createDigit(left);
+      createDigit(right);
+    }, 100);
+  </script>
+</body>
+</html>
