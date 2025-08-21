@@ -1,48 +1,82 @@
 <!DOCTYPE html>
 <html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Score Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<div id="water-background">
-  <div class="content">
-    <h1>Your Website Content</h1>
+  <!-- Vanta and Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js"></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+  <script>
+      const printImageUrl = "{{ diploma_url }}";
+      const secretImageUrl = "{{ secret_url }}";
+      const rechts_url = "{{ rechts_url }}";
+  </script>
+</head>
+<body>
+
+<div id="customAlert" style="display:none;">
+  <div class="alert-content">
+    <p id="alertText"></p>
+    <div style="display: flex; justify-content: center; gap: 20px;">
+      <button style="background-color: #28a745;" onclick="closeAlert()">Ik ben San</button>
+      <button style="background-color: #007bff;" onclick="window.location.href='/andere-pagina'">Ik ben niet San</button>
+    </div>
   </div>
 </div>
 
-<!-- Include THREE.js and Vanta Waves -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js"></script>
+<div id="water-background"></div>
 
-<script>
-  VANTA.WAVES({
-    el: "#water-background",
-    mouseControls: true,
-    touchControls: true,
-    waveHeight: 20,
-    waveSpeed: 1,
-    color: 0x0077be
-  });
-</script>
+<div class="page-content">
+  <section>
+    <video id="backgroundVideo" autoplay muted loop playsinline
+      style="position: absolute; right: 5rem; top: 8rem; max-height: 60vh; opacity: 0.8; pointer-events: none;filter: brightness(1.4);">
+      <source src="{{ rechts_url }}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
 
-<style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden; /* Prevent scrollbars if unwanted */
-  }
+    <h1>Score calculator</h1>
 
-  #water-background {
-    width: 100vw;
-    height: 100vh;
-    position: relative;
-  }
+    <div class="form-group">
+      <label for="dag">Dag van examen:</label>
+      <select id="dag">
+        <option value="chill">chill</option>
+        <option value="niet chill">niet chill</option>
+      </select>
+    </div>
 
-  .content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    text-align: center;
-    z-index: 1;
-  }
-</style>
+    <div class="form-group">
+      <label for="uur">Uur van examen:</label>
+      <select id="uur">
+        <option value="chill">chill</option>
+        <option value="niet chill">niet chill</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="serie">Nieuwe aflevering van blind gekocht?:</label>
+      <select id="serie">
+        <option value="nee">nee</option>
+        <option value="ja">ja</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="uren">Uren gestudeerd: <span id="urenLabel">0</span></label>
+      <input type="range" id="uren" min="0" max="50" value="0" />
+    </div>
+
+    <button onclick="berekenScore()">✓ Bereken Score</button>
+  </section>
+</div>
+
+<!-- Keep your JS at the end, using printImageUrl, secretImageUrl, rechts_url -->
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
