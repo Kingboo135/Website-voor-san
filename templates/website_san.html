@@ -1,3 +1,4 @@
+save
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -8,75 +9,558 @@
   <!-- Vanta and Three.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js"></script>
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
   <script>
+      // Flask will inject these URLs here dynamically
       const printImageUrl = "{{ diploma_url }}";
       const secretImageUrl = "{{ secret_url }}";
-      const rechts_url = "{{ rechts_url }}";
+      const rechts_url = "{{rechts_url }}";
   </script>
-</head>
-<body>
 
-<div id="customAlert" style="display:none;">
-  <div class="alert-content">
-    <p id="alertText"></p>
-    <div style="display: flex; justify-content: center; gap: 20px;">
-      <button style="background-color: #28a745;" onclick="closeAlert()">Ik ben San</button>
-      <button style="background-color: #007bff;" onclick="window.location.href='/andere-pagina'">Ik ben niet San</button>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: sans-serif;
+      overflow-x: hidden;
+    }
+
+    #water-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+    }
+
+    .page-content {
+      font-size: 2rem;
+      position: relative;
+      z-index: 1;
+      color: white;
+      padding: 2rem;
+    }
+
+    section {
+      min-height: 65vh;
+      padding: 3rem;
+      background: rgba(0, 0, 0, 0.3);
+      margin-bottom: 1rem;
+      border-radius: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1rem;
+    }
+
+    select {
+      width: 150px;
+      padding: 4px 8px;
+      font-size: 1.2rem;
+      border-radius: 6px;
+    }
+
+    input[type="range"] {
+      width: 250px;
+      height: 8px;
+      appearance: none;
+      background: #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 1.2rem;
+      background-color: #0077be;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+#customAlert {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .alert-content {
+            background: white;
+            padding: 30px;
+            font-size: 18px;
+            border-radius: 10px;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        }
+        .alert-content button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+
+    #drowning-effect {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 30, 60, 0.8);
+      backdrop-filter: blur(6px);
+      z-index: 10;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: #a6d9ff;
+      font-size: 2rem;
+    }
+
+    .rising-water {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 0%;
+      background: rgba(0, 119, 190, 0.6);
+      z-index: 1;
+      animation: riseWater 3s ease-in-out forwards;
+    }
+
+    .drowning-message {
+      z-index: 2;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 2rem 3rem;
+      border-radius: 12px;
+      color: #a6d9ff;
+      box-shadow: 0 0 20px #00bfffaa;
+      text-align: center;
+      opacity: 0;
+      animation: fadeIn 1.5s ease forwards;
+      animation-delay: 3s;
+    }
+
+    #drowning-effect p {
+      margin-bottom: 2rem;
+      font-weight: bold;
+    }
+
+    #drowning-effect button {
+      padding: 1rem 2rem;
+      font-size: 1.5rem;
+      background-color: #0077be;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 15px #00bfffaa;
+      transition: background-color 0.3s ease;
+    }
+
+    #drowning-effect button:hover {
+      background-color: #005fa3;
+    }
+
+    @keyframes riseWater {
+      0% { height: 0%; }
+      100% { height: 100%; }
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+#success-effect {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: linear-gradient(to top, #0077be, #00cfff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 1000;
+  animation: fadeIn 1s ease forwards;
+}
+
+.swimming-background {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('https://media.giphy.com/media/l0MYGb1LuZ3n7dRnO/giphy.gif'); /* swimming gif */
+  background-size: cover;
+  background-position: center;
+  opacity: 0.3;
+  z-index: 1;
+}
+
+.success-message {
+  z-index: 2;
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 3rem 4rem;
+  border-radius: 16px;
+  text-align: center;
+  max-width: 600px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.4);
+  opacity: 0.8;
+}
+
+.success-message img {
+  max-width: 100%;
+  max-height: 250px;   /* or whatever fits nicely in your layout */
+  width: auto;
+  height: auto;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  object-fit: contain; /* prevents distortion */
+}
+
+.success-message p {
+  font-size: 2rem;
+  color: #0077be;
+  margin-bottom: 1.5rem;
+}
+
+.success-message button {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  background-color: #0077be;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.success-message button:hover {
+  background-color: #005fa3;
+}
+
+#swimButton {
+  position: fixed;
+  bottom: 100px;
+  left: -200px; /* start off-screen */
+  padding: 15px 30px;
+  font-size: 18px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  z-index: 1600;
+  animation: swimAcross 12s linear infinite;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+}
+
+@keyframes swimAcross {
+  0% {
+    left: -200px;
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+  100% {
+    left: 100vw;
+    transform: rotate(-10deg);
+  }
+}
+@keyframes floatBounce {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0); }
+}
+#swimButton {
+  position: fixed;
+  bottom: 100px;
+  left: -200px;
+  padding: 15px 30px;
+  font-size: 18px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  z-index: 1600;
+  animation: swimAcross 12s linear infinite, floatBounce 2s ease-in-out infinite;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+}
+
+  </style>
+</head>
+
+<body>
+  <div id="customAlert" style="display:none;">
+      <div class="alert-content">
+        <p id="alertText"></p>
+        <div style="display: flex; justify-content: center; gap: 20px;">
+          <button style="background-color: #28a745;" onclick="closeAlert()">Ik ben San</button>
+          <button style="background-color: #007bff;" onclick="window.location.href='/andere-pagina'">Ik ben niet San</button>
+        </div>
+      </div>
+  </div>
+
+  <div id="water-background"></div>
+	
+
+  <div class="page-content">
+	
+    <section>
+	<video  id="backgroundVideo" autoplay loop playsinline
+       		style="position: absolute; right: 5rem; top: 8rem; max-height: 60vh; opacity: 0.8; pointer-events: none;filter: brightness(1.4);">
+    		<source src="{{ rechts_url }}" type="video/mp4">
+    		Your browser does not support the video tag.
+	</video>
+
+      <h1>Score calculator</h1>
+
+      <div class="form-group">
+        <label for="dag">Dag van examen:</label>
+        <select id="dag">
+          <option value="chill">chill</option>
+          <option value="niet chill">niet chill</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="uur">Uur van examen:</label>
+        <select id="uur">
+          <option value="chill">chill</option>
+          <option value="niet chill">niet chill</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="serie">Nieuwe aflevering van blind gekocht?:</label>
+        <select id="serie">
+          <option value="nee">nee</option>
+          <option value="ja">ja</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="uren">Uren gestudeerd: <span id="urenLabel">0</span></label>
+        <input type="range" id="uren" min="0" max="50" value="0" />
+      </div>
+
+      <button onclick="berekenScore()">✓ Bereken Score</button>
+    </section>
+  </div>
+
+  <div id="drowning-effect">
+    <div class="rising-water"></div>
+    <div class="drowning-message">
+      <p>Tijdens de generale repetitie ben je verdronken... 😵‍💫</p>
+      <button id="continue-btn">Continue</button>
     </div>
+  </div>
+
+<div id="success-effect" style="display: none;">
+  <div class="swimming-background"></div>
+  <div class="success-message">
+    <img id="success-image" src="" alt="Success Image">
+    <p id="success-text">Gefeliciteerd!</p>
+    <button onclick="closeSuccess()">Sluit</button>
   </div>
 </div>
 
-<div id="water-background"></div>
+  <script>
+	window.onload = function () {
+            const message_open = 'Deze code is bedoeld voor San De Heyder';
+            document.getElementById('alertText').innerText = message_open;
+            document.getElementById('customAlert').style.display = 'flex';
+        };
 
-<div class="page-content">
-  <section>
-    <video id="backgroundVideo" autoplay muted loop playsinline
-      style="position: absolute; right: 5rem; top: 8rem; max-height: 60vh; opacity: 0.8; pointer-events: none;filter: brightness(1.4);">
-      <source src="{{ rechts_url }}" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
+        function closeAlert() {
+            document.getElementById('customAlert').style.display = 'none';
+        }
+    // VANTA background
+    VANTA.WAVES({
+      el: "#water-background",
+      mouseControls: true,
+      touchControls: true,
+      waveHeight: 20,
+      waveSpeed: 1,
+      color: 0x0077be
+    });
 
-    <h1>Score calculator</h1>
+    // Update slider
+    const urenSlider = document.getElementById('uren');
+    const urenLabel = document.getElementById('urenLabel');
+    urenSlider.addEventListener('input', () => {
+      urenLabel.textContent = urenSlider.value;
+    });
 
-    <div class="form-group">
-      <label for="dag">Dag van examen:</label>
-      <select id="dag">
-        <option value="chill">chill</option>
-        <option value="niet chill">niet chill</option>
-      </select>
-    </div>
+    function berekenScore() {
+      const dag = document.getElementById('dag').value;
+      const uur = document.getElementById('uur').value;
+      const serie = document.getElementById('serie').value;
+      const uren = document.getElementById('uren').value;
 
-    <div class="form-group">
-      <label for="uur">Uur van examen:</label>
-      <select id="uur">
-        <option value="chill">chill</option>
-        <option value="niet chill">niet chill</option>
-      </select>
-    </div>
+      fetch('/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dag, uur, serie, uren })
+      })
+      .then(response => response.json())
+      .then(data => {
+	window.lastAllMessages = data.all_messages;
+        if (data.Score < 50) {
+          const effect = document.getElementById('drowning-effect');
+          const drowningMessageEl = document.querySelector('.drowning-message');
+	  const messageText = drowningMessageEl.querySelector('p');
+          const water = document.querySelector('.rising-water');
 
-    <div class="form-group">
-      <label for="serie">Nieuwe aflevering van blind gekocht?:</label>
-      <select id="serie">
-        <option value="nee">nee</option>
-        <option value="ja">ja</option>
-      </select>
-    </div>
+	  messageText.textContent = data.message || "Tijdens de generale repetitie ben je verdronken... 😵‍💫";
 
-    <div class="form-group">
-      <label for="uren">Uren gestudeerd: <span id="urenLabel">0</span></label>
-      <input type="range" id="uren" min="0" max="50" value="0" />
-    </div>
+          // Reset
+          drowningMessageEl.style.opacity = 0;
+          effect.style.display = 'flex';
+          water.style.height = '0%';
+          void water.offsetWidth; // force reflow
+          water.style.animation = 'riseWater 3s ease-in-out forwards';
+          drowningMessageEl.style.animation = 'fadeIn 1.5s ease forwards';
+          drowningMessageEl.style.animationDelay = '3s';
+        } else {
+	  swimButton.style.display = 'block';
+	  document.getElementById('swimButton').style.display = 'block';
 
-    <button onclick="berekenScore()">✓ Bereken Score</button>
-  </section>
+          const successEffect = document.getElementById('success-effect');
+	  const successText = document.getElementById('success-text');
+	  const successImage = document.getElementById('success-image');
+
+	// Set message and image
+	successText.innerHTML = (data.message || "Goed gedaan!").replace(/\n/g, "<br>");
+	successImage.src = printImageUrl || ""; // Flask injects this dynamically
+
+	successEffect.style.display = 'flex';
+	;
+        }
+      })
+      .catch(error => {
+        alert("Er ging iets mis bij het berekenen van de score.");
+        console.error(error);
+      });
+    }
+
+    document.getElementById('continue-btn').addEventListener('click', () => {
+      document.getElementById('drowning-effect').style.display = 'none';
+    });
+
+let secretCode = "waterballet";
+let typedKeys = "";
+
+document.addEventListener("keydown", function(e) {
+       typedKeys += e.key.toLowerCase();
+       if (typedKeys.length > secretCode.length) {
+           typedKeys = typedKeys.slice(-secretCode.length);
+       }
+       if (typedKeys === secretCode) {
+           activateEasterEgg();
+           typedKeys = ""; // reset
+       }
+});
+
+function activateEasterEgg() {
+     	const egg = document.createElement("div");
+     	egg.style.position = "fixed";
+    	egg.style.top = 0;
+     	egg.style.left = 0;
+     	egg.style.width = "100%";
+     	egg.style.height = "100%";
+     	egg.style.backgroundColor = "black"; // fallback background
+     	egg.style.zIndex = 2000;
+     	egg.style.display = "flex";
+     	egg.style.justifyContent = "center";
+     	egg.style.alignItems = "center";
+
+     	const video = document.createElement("video");
+	video.src = secretImageUrl;
+	video.autoplay = true;
+	video.loop = true;
+	video.muted = true; // prevent autoplay issues
+	video.playsInline = true; // for iOS Safari
+	video.style.maxWidth = "100%";
+	video.style.maxHeight = "100%";
+	video.style.objectFit = "contain";
+
+	egg.appendChild(video);
+
+     document.body.appendChild(egg);
+
+      setTimeout(() => {
+         document.body.removeChild(egg);
+       }, 4500); // remove after 5 seconds
+}
+function closeSuccess() {
+  document.getElementById('success-effect').style.display = 'none';
+  document.getElementById('swimButton').style.display = 'none'; // ✅ Hide swim button
+}
+function showComments() {
+    const modal = document.getElementById('commentsModal');
+    const commentsList = document.getElementById('commentsList');
+    commentsList.innerHTML = '';
+    const ul = document.createElement('ul');
+    if (window.lastAllMessages) {
+      window.lastAllMessages.forEach(msg => {
+        const li = document.createElement('li');
+        li.textContent = msg;
+        ul.appendChild(li);
+      });
+    }
+    commentsList.appendChild(ul);
+    modal.style.display = 'flex';
+  }
+document.addEventListener('DOMContentLoaded', () => {
+  const video = document.getElementById('backgroundVideo');
+
+  // Wait for any user interaction
+  function enableVideoSound() {
+    video.muted = false;
+    video.volume = 1.0;
+
+    // Play with sound
+    video.play().catch(err => {
+      console.log('Autoplay with sound blocked:', err);
+    });
+
+    // Only do this once
+    document.removeEventListener('click', enableVideoSound);
+  }
+
+  document.addEventListener('click', enableVideoSound);
+});
+  </script>
+<button id="swimButton" onclick="showComments()" style="display: none;">🏊‍♀️ Lees Proficiatwensen</button>
+<div id="commentsModal" style="display: none; position: fixed; top: 0; left: 0;
+  width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000;
+  display: none; justify-content: center; align-items: center;">
+
+  <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 600px; width: 90%; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+    <h2 style="margin-top: 0; color: #0077be;">Proficiatwensen 🎉</h2>
+    <div id="commentsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 1rem;"></div>
+    <button onclick="document.getElementById('commentsModal').style.display='none'" 
+      style="padding: 0.5rem 1rem; font-size: 1rem; background-color: #0077be; color: white; border: none; border-radius: 8px; cursor: pointer;">
+      Sluiten
+    </button>
+  </div>
 </div>
-
-<!-- Keep your JS at the end, using printImageUrl, secretImageUrl, rechts_url -->
-
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
